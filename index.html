@@ -266,7 +266,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 
 <!-- Save Modal -->
 <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
-  <div class="modal-sheet">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
     <div class="modal-title">Save Playlist</div>
     <div class="modal-sub" id="modalSub">Give your playlist a name.</div>
@@ -282,9 +282,12 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 
 <!-- Edit Song Modal -->
 <div class="modal-overlay" id="editModal" onclick="closeEditModal(event)">
-  <div class="modal-sheet">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
-    <div class="modal-title">Edit Song</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <div class="modal-title" style="margin-bottom:0">Edit Song</div>
+      <button onclick="closeEditModal()" style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:0 4px;">×</button>
+    </div>
     <div class="modal-sub">Update the song details.</div>
     <input class="modal-input" id="editTitle" placeholder="Song title">
     <input class="modal-input" id="editArtist" placeholder="Artist">
@@ -510,8 +513,12 @@ function openEditModal(id){
   document.getElementById('editArtist').value=s.artist||'';
   document.getElementById('editGenre').value=s.genre||'';
   document.getElementById('editModal').classList.add('open');
+  setTimeout(()=>document.getElementById('editTitle').focus(),300);
 }
-function closeEditModal(e){if(!e||e.target===document.getElementById('editModal'))document.getElementById('editModal').classList.remove('open');}
+function closeEditModal(e){
+  if(!e||e.target===document.getElementById('editModal'))
+    document.getElementById('editModal').classList.remove('open');
+}
 function confirmEdit(){
   const id=parseInt(document.getElementById('editSongId').value);
   const title=document.getElementById('editTitle').value.trim();
