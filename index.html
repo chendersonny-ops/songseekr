@@ -426,29 +426,17 @@ function renderSongs(songs){
         <div class="song-tags">${s.genre?`<span class="tag">${s.genre}</span>`:''} ${(s.mood||[]).map(m=>`<span class="tag">${m}</span>`).join('')}</div>
       </div>
       <div class="song-actions">
-        <div class="check-circle"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        <div class="song-action-btn edit-btn" title="Edit">✏️</div>
-        <div class="song-action-btn del-btn" title="Delete">🗑</div>
+        <div class="check-circle" onclick="toggleSong(${s.id})">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <button class="song-action-btn edit-btn" onclick="openEditModal(${s.id})" type="button">✏️</button>
+        <button class="song-action-btn del-btn" onclick="confirmDeleteSong(${s.id})" type="button">🗑</button>
       </div>`;
 
-    // Card click — select/deselect
+    // only the card background toggles selection — not the action column
     card.addEventListener('click', e => {
-      if (e.target.closest('.edit-btn') || e.target.closest('.del-btn')) return;
+      if (e.target.closest('.song-actions')) return;
       toggleSong(s.id);
-    });
-
-    // Edit button — use pointerup for reliable mobile+desktop support
-    const editBtn = card.querySelector('.edit-btn');
-    editBtn.addEventListener('pointerup', e => {
-      e.stopPropagation();
-      openEditModal(s.id);
-    });
-
-    // Delete button
-    const delBtn = card.querySelector('.del-btn');
-    delBtn.addEventListener('pointerup', e => {
-      e.stopPropagation();
-      confirmDeleteSong(s.id);
     });
 
     list.appendChild(card);
@@ -693,6 +681,37 @@ function exportCSV(songs,filename){
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 
 renderSongs(getFiltered());updateUI();
+
+// Make sure all functions are globally accessible for inline onclick
+window.openEditModal=openEditModal;
+window.confirmDeleteSong=confirmDeleteSong;
+window.toggleSong=toggleSong;
+window.confirmEdit=confirmEdit;
+window.closeEditModal=closeEditModal;
+window.openSaveModal=openSaveModal;
+window.confirmSave=confirmSave;
+window.closeModal=closeModal;
+window.closeConfirm=closeConfirm;
+window.executeDelete=executeDelete;
+window.clearSelection=clearSelection;
+window.switchPage=switchPage;
+window.setMood=setMood;
+window.toggleAddForm=toggleAddForm;
+window.addCustomSong=addCustomSong;
+window.toggleReorder=toggleReorder;
+window.suggestWithAI=suggestWithAI;
+window.copyToClipboard=copyToClipboard;
+window.downloadCSV=downloadCSV;
+window.openPlaylistDetail=openPlaylistDetail;
+window.closePlaylistDetail=closePlaylistDetail;
+window.removeTrackFromPlaylist=removeTrackFromPlaylist;
+window.confirmDeletePlaylist=confirmDeletePlaylist;
+window.copyPlaylist=copyPlaylist;
+window.downloadPlaylistCSV=downloadPlaylistCSV;
+window.riDragStart=riDragStart;
+window.riDragOver=riDragOver;
+window.riDrop=riDrop;
+window.riDragEnd=riDragEnd;
 </script>
 <script>if('serviceWorker'in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}</script>
 </body>
