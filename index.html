@@ -49,9 +49,9 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 .section-label{padding:18px 22px 10px;font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);font-weight:500;z-index:1;}
 /* Song List */
 .song-list{flex:1;padding:0 16px 150px;display:flex;flex-direction:column;gap:10px;position:relative;z-index:1;}
-.song-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;animation:slideIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both;}
+.song-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all 0.2s;position:relative;animation:slideIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both;}
 @keyframes slideIn{from{opacity:0;transform:translateY(16px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)}}
-.song-card::before{content:'';position:absolute;inset:0;border-radius:16px;opacity:0;background:linear-gradient(135deg,rgba(255,61,110,0.1),rgba(108,61,232,0.1));transition:opacity 0.2s;}
+.song-card::before{content:'';position:absolute;inset:0;border-radius:16px;opacity:0;background:linear-gradient(135deg,rgba(255,61,110,0.1),rgba(108,61,232,0.1));transition:opacity 0.2s;pointer-events:none;}
 .song-card:hover::before,.song-card.selected::before{opacity:1;}
 .song-card.selected{border-color:var(--accent);box-shadow:0 0 20px rgba(255,61,110,0.2);}
 .album-art{width:48px;height:48px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px;}
@@ -413,10 +413,15 @@ function renderSongs(songs){
   list.innerHTML='';
   if(!songs.length){list.innerHTML='<div class="empty-state"><div class="icon">🎵</div><p>No songs match.<br>Try a different filter.</p></div>';return;}
   songs.forEach((s,i)=>{
-    const sel=selectedIds.has(s.id);
+
+    // wrapper holds card + action row
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;flex-direction:column;gap:4px;';
+    wrap.style.animationDelay = `${i*0.04}s`;
+
+    // ── Song card (select only) ──
     const card=document.createElement('div');
-    card.className='song-card'+(sel?' selected':'');
-    card.style.animationDelay=`${i*0.04}s`;
+    card.className='song-card'+(selectedIds.has(s.id)?' selected':'');
     card.dataset.id=s.id;
     card.innerHTML=`
       <div class="album-art" style="background:${s.color}22;border:1px solid ${s.color}44;"><span>${s.emoji}</span></div>
@@ -425,21 +430,33 @@ function renderSongs(songs){
         <div class="song-meta">${s.artist||'—'}</div>
         <div class="song-tags">${s.genre?`<span class="tag">${s.genre}</span>`:''} ${(s.mood||[]).map(m=>`<span class="tag">${m}</span>`).join('')}</div>
       </div>
-      <div class="song-actions">
-        <div class="check-circle" onclick="toggleSong(${s.id})">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <button class="song-action-btn edit-btn" onclick="openEditModal(${s.id})" type="button">✏️</button>
-        <button class="song-action-btn del-btn" onclick="confirmDeleteSong(${s.id})" type="button">🗑</button>
+      <div class="check-circle">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>`;
+    card.addEventListener('click', ()=>toggleSong(s.id));
 
-    // only the card background toggles selection — not the action column
-    card.addEventListener('click', e => {
-      if (e.target.closest('.song-actions')) return;
-      toggleSong(s.id);
-    });
+    // ── Action row (edit + delete) — completely separate from card ──
+    const actions = document.createElement('div');
+    actions.style.cssText = 'display:flex;gap:8px;padding:0 4px;';
 
-    list.appendChild(card);
+    const editBtn = document.createElement('button');
+    editBtn.type = 'button';
+    editBtn.textContent = '✏️ Edit';
+    editBtn.style.cssText = 'flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:7px;color:var(--text);font-family:"DM Sans",sans-serif;font-size:12px;cursor:pointer;touch-action:manipulation;';
+    editBtn.addEventListener('click', () => openEditModal(s.id));
+
+    const delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.textContent = '🗑 Delete';
+    delBtn.style.cssText = 'flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:7px;color:var(--accent);font-family:"DM Sans",sans-serif;font-size:12px;cursor:pointer;touch-action:manipulation;';
+    delBtn.addEventListener('click', () => confirmDeleteSong(s.id));
+
+    actions.appendChild(editBtn);
+    actions.appendChild(delBtn);
+
+    wrap.appendChild(card);
+    wrap.appendChild(actions);
+    list.appendChild(wrap);
   });
 }
 
