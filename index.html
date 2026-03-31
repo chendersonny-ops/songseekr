@@ -60,12 +60,12 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 .song-meta{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .song-tags{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap;}
 .tag{font-size:10px;padding:2px 7px;border-radius:6px;background:rgba(255,255,255,0.07);color:var(--muted);}
-.song-actions{display:flex;flex-direction:column;gap:5px;align-items:center;flex-shrink:0;}
+.song-actions{display:flex;flex-direction:column;gap:5px;align-items:center;flex-shrink:0;touch-action:manipulation;}
 .check-circle{width:24px;height:24px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
 .song-card.selected .check-circle{background:var(--accent);border-color:var(--accent);}
 .check-circle svg{opacity:0;transition:opacity 0.2s;}
 .song-card.selected .check-circle svg{opacity:1;}
-.song-action-btn{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;transition:all 0.2s;touch-action:manipulation;}
+.song-action-btn{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;transition:all 0.2s;touch-action:manipulation;user-select:none;}
 .song-action-btn:hover{border-color:var(--accent2);}
 .song-action-btn.del-btn:hover{border-color:var(--accent);background:rgba(255,61,110,0.1);}
 /* Add song */
@@ -437,26 +437,16 @@ function renderSongs(songs){
       toggleSong(s.id);
     });
 
-    // Edit button
+    // Edit button — use pointerup for reliable mobile+desktop support
     const editBtn = card.querySelector('.edit-btn');
-    editBtn.addEventListener('click', e => {
-      e.stopPropagation();
-      openEditModal(s.id);
-    });
-    editBtn.addEventListener('touchend', e => {
-      e.preventDefault();
+    editBtn.addEventListener('pointerup', e => {
       e.stopPropagation();
       openEditModal(s.id);
     });
 
     // Delete button
     const delBtn = card.querySelector('.del-btn');
-    delBtn.addEventListener('click', e => {
-      e.stopPropagation();
-      confirmDeleteSong(s.id);
-    });
-    delBtn.addEventListener('touchend', e => {
-      e.preventDefault();
+    delBtn.addEventListener('pointerup', e => {
       e.stopPropagation();
       confirmDeleteSong(s.id);
     });
