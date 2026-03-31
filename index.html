@@ -65,7 +65,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 .song-card.selected .check-circle{background:var(--accent);border-color:var(--accent);}
 .check-circle svg{opacity:0;transition:opacity 0.2s;}
 .song-card.selected .check-circle svg{opacity:1;}
-.song-action-btn{width:24px;height:24px;border-radius:50%;border:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;transition:all 0.2s;}
+.song-action-btn{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;transition:all 0.2s;touch-action:manipulation;}
 .song-action-btn:hover{border-color:var(--accent2);}
 .song-action-btn.del-btn:hover{border-color:var(--accent);background:rgba(255,61,110,0.1);}
 /* Add song */
@@ -220,7 +220,10 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
         <div class="playlist-title" id="playlistTitle">Current Selection</div>
         <div class="playlist-subtitle" id="playlistSub">0 tracks</div>
       </div>
-      <button class="reorder-toggle" onclick="toggleReorder()" id="reorderToggleBtn">↕ Reorder</button>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="reorder-toggle" onclick="toggleReorder()" id="reorderToggleBtn">↕ Reorder</button>
+        <button class="reorder-toggle" onclick="clearSelection()" style="color:var(--accent);">✕ Clear</button>
+      </div>
     </div>
     <div class="reorder-panel" id="reorderPanel"></div>
     <div class="bar-actions">
@@ -421,12 +424,51 @@ function renderSongs(songs){
       </div>
       <div class="song-actions">
         <div class="check-circle"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        <div class="song-action-btn" onclick="event.stopPropagation();openEditModal(${s.id})" title="Edit">✏️</div>
-        <div class="song-action-btn del-btn" onclick="event.stopPropagation();confirmDeleteSong(${s.id})" title="Delete">🗑</div>
+        <div class="song-action-btn edit-btn" title="Edit">✏️</div>
+        <div class="song-action-btn del-btn" title="Delete">🗑</div>
       </div>`;
-    card.addEventListener('click',e=>{if(e.target.closest('.song-action-btn'))return;toggleSong(s.id);});
+
+    // Card click — select/deselect
+    card.addEventListener('click', e => {
+      if (e.target.closest('.edit-btn') || e.target.closest('.del-btn')) return;
+      toggleSong(s.id);
+    });
+
+    // Edit button
+    const editBtn = card.querySelector('.edit-btn');
+    editBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      openEditModal(s.id);
+    });
+    editBtn.addEventListener('touchend', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      openEditModal(s.id);
+    });
+
+    // Delete button
+    const delBtn = card.querySelector('.del-btn');
+    delBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      confirmDeleteSong(s.id);
+    });
+    delBtn.addEventListener('touchend', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      confirmDeleteSong(s.id);
+    });
+
     list.appendChild(card);
   });
+}
+
+function clearSelection(){
+  selectedIds.clear();
+  selectedOrder=[];
+  updateUI();
+  renderSongs(getFiltered());
+  saveState();
+  showToast('Selection cleared.');
 }
 
 function toggleSong(id){
